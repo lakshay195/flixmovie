@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liked Movies</title>
+    <link href="../css/style.css" rel="stylesheet">
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background: #000;
+            color: #fff;
+            padding: 30px 0;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .navbar h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #e50914;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+            border: 2px solid #e50914;
+            border-radius: 5px;
+            background: transparent;
+            position: absolute;
+            top: 40px;
+            right: 20px;
+        }
+
+        .navbar a:hover {
+            background: #e50914;
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        /* Scrollable Row Styling */
+        .liked-movies-container {
+            position: relative;
+            margin: 30px;
+        }
+
+        .movie-scroll {
+            display: flex;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .movie-scroll::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        .movie-scroll::-webkit-scrollbar-thumb {
+            background: #e50914;
+            border-radius: 5px;
+        }
+
+        .movie-scroll::-webkit-scrollbar-track {
+            background: #222;
+        }
+
+        .movie-card {
+            min-width: 200px;
+            background-color: #111;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .movie-card:hover {
+            transform: scale(1.05);
+        }
+
+        .poster {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .card-wrapper {
+            position: relative;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .heart-icon {
+            cursor: pointer;
+            font-size: 24px;
+            color: #e50914;
+        }
+
+        /* Scroll Buttons */
+        .scroll-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 10;
+            border-radius: 50%;
+        }
+
+        .scroll-left {
+            left: 10px;
+        }
+
+        .scroll-right {
+            right: 10px;
+        }
+
+        /* Alert Box */
+        .alert-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #e50914;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="container">
+            <h1>❤️ Liked Movies</h1>
+            <a href="../index.html">← Back to Home</a>
+        </div>
+    </header>
+
+    <!-- Liked Movies Section -->
+    <div class="liked-movies-container">
+        <button class="scroll-btn scroll-left" onclick="scrollLeft()">❮</button>
+        <div id="liked-row" class="movie-scroll">
+            <!-- Liked movies will be displayed here -->
+        </div>
+        <button class="scroll-btn scroll-right" onclick="scrollRight()">❯</button>
+    </div>
+
+    <!-- Custom Alert Box -->
+    <div id="alert-message" class="alert-message"></div>
+
+    <!-- JavaScript -->
+    <script>
+        const likedRow = document.getElementById('liked-row');
+        const alertBox = document.getElementById('alert-message');
+        let likedMovies = JSON.parse(localStorage.getItem('likedMovies')) || [];
+
+        function showAlert(message) {
+            alertBox.textContent = message;
+            alertBox.style.display = 'block';
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 3000);
+        }
+
+        // Display liked movies
+        function displayLikedMovies() {
+            likedRow.innerHTML = '';
+
+            if (likedMovies.length === 0) {
+                likedRow.innerHTML = `<p class="text-center">No movies liked yet!</p>`;
+                return;
+            }
+
+            likedMovies.forEach((movie, index) => {
+                const card = document.createElement('div');
+                card.classList.add('movie-card');
+
+                const poster = movie.poster ? movie.poster : "https://via.placeholder.com/500x750?text=No+Image";
+
+                card.innerHTML = `
+                    <div class="card-wrapper">
+                        <img src="${poster}" alt="${movie.title}" class="poster">
+                        <div class="overlay">
+                            <span class="heart-icon" onclick="unlikeMovie(${index})">❤️</span>
+                        </div>
+                    </div>
+                    <h3>${movie.title}</h3>
+                    <p>⭐ ${movie.rating}</p>
+                `;
+
+                likedRow.appendChild(card);
+            });
+        }
+
+        // Unlike a movie
+        function unlikeMovie(index) {
+            const removedMovie = likedMovies[index];
+            likedMovies.splice(index, 1);
+            localStorage.setItem('likedMovies', JSON.stringify(likedMovies));
+            displayLikedMovies();
+            showAlert(`"${removedMovie.title}" removed from Liked Movies!`);
+        }
+
+        // Scroll buttons
+        function scrollLeft() {
+            likedRow.scrollBy({ left: -300, behavior: 'smooth' });
+        }
+
+        function scrollRight() {
+            likedRow.scrollBy({ left: 300, behavior: 'smooth' });
+        }
+
+        displayLikedMovies();
+    </script>
+
+</body>
+</html>
