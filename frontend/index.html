@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flix - Movie Recommender</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+     body {
+      background-color: #000;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      padding: 30px;
+    }
+    .navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px; /* Reduced padding */
+  background-color: #000;
+  box-shadow: 0 4px 8px rgba(255, 0, 0, 0.1);
+}
+
+.navbar h1 {
+  margin: 0;
+  font-size: 1.5rem; /* Slightly smaller */
+  font-weight: bold;
+ 
+}
+
+.navbar nav a {
+ 
+  text-decoration: none;
+  font-weight: bold;
+  }
+
+    h1 {
+      color: #ff4c4c;
+      text-shadow: 0 0 6px #ff4c4c;
+      margin-bottom: 16px;
+      display: inline-block;
+    }
+
+    h2 {
+      color: #ff4c4c;
+      text-shadow: 0 0 6px #ff4c4c;
+      margin-bottom: 16px;
+    }
+
+    .search-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .search-container input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    .search-container button {
+      padding: 10px 16px;
+      font-size: 16px;
+      background-color: #ff4c4c;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .search-container button:hover {
+      background-color: #e13e3e;
+    }
+    .search-movie-card {
+  display: flex;
+  gap: 1rem;
+  padding: 10px;
+  background-color: #1c1c1c;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.search-movie-card img {
+  height: 100px;
+  border-radius: 6px;
+}
+
+.search-movie-info {
+  display: flex;
+  flex-direction: column;
+}
+
+    .details-content {
+      width: 100vw;
+      height: 100vh;
+      padding: 40px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .details-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .poster-container img {
+      width: 300px;
+      border-radius: 10px;
+    }
+    .info-container {
+      flex: 1;
+      min-width: 300px;
+    }
+    .close-icon {
+      font-size: 24px;
+      cursor: pointer;
+      position: absolute;
+      top: 20px;
+      right: 30px;
+    }
+    .movie-list {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding: 10px 0;
+    }
+    .movie-list .movie {
+      min-width: 150px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+    .details-overlay {
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      display: none;
+      overflow-y: auto;
+    }
+    .scroll-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .scroll-btn {
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: none;
+      font-size: 24px;
+      padding: 10px;
+      cursor: pointer;
+      z-index: 10;
+      border-radius: 50%;
+      margin: 0 10px;
+      transition: background-color 0.3s;
+    }
+    .scroll-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    .movie-scroll {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scroll-behavior: smooth;
+}
+.movie-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.movie-scroll::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 4px;
+}
+
+    .movie {
+      min-width: 150px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+    
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container">
+      <h1>🎬 Flix - Movie Recommender</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="pages/wishlist.html">Wishlist</a>
+        <a href="pages/liked.html">Liked</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section with Search Bar -->
+<section class="hero">
+  <div class="container">
+    <h2>Discover Movies You'll Love 🎥</h2>
+    
+    <div id="hero-posters"></div>
+    
+    <div class="search-container">
+      <input type="text" id="search" placeholder="Search for a movie..." />
+      <button onclick="searchMovies()">Search 🔍</button>
+    </div>
+    
+    <!-- Optional: show basic results -->
+    <div id="search-results" class="search-results"></div>
+
+    <!-- Movie details from search -->
+    <div id="movie-details" class="movie-details"></div>
+  </div>
+</section>
+
+
+  <!-- Movie Rows Section -->
+  <div class="movie-rows">
+    <div class="movie-row">
+      <h2>🔥 Trending Now</h2>
+      <div class="scroll-wrapper">
+        <button class="scroll-btn left" onclick="scrollMovies(this, -1)">◀</button>
+        <div id="trending" class="movie-scroll"></div>
+        <button class="scroll-btn right" onclick="scrollMovies(this, 1)">▶</button>
+      </div>
+    </div>
+
+    <div class="movie-row">
+      <h2>⭐ Top Rated</h2>
+      <div class="scroll-wrapper">
+        <button class="scroll-btn left" onclick="scrollMovies(this, -1)">◀</button>
+        <div id="top-rated" class="movie-scroll"></div>
+        <button class="scroll-btn right" onclick="scrollMovies(this, 1)">▶</button>
+      </div>
+    </div>
+
+    <section id="genre-recommendations" class="movie-section">
+      <h2>🎬 Genre-based Recommendations</h2>
+      <div class="scroll-wrapper">
+        <button class="scroll-btn left" onclick="scrollMovies(this, -1)">◀</button>
+        <div id="genre-movies" class="movie-scroll"></div>
+        <button class="scroll-btn right" onclick="scrollMovies(this, 1)">▶</button>
+      </div>
+    </section>
+
+    <div class="movie-row">
+      <h2>🎥 New Releases</h2>
+      <div class="scroll-wrapper">
+        <button class="scroll-btn left" onclick="scrollMovies(this, -1)">◀</button>
+        <div id="new-releases" class="movie-scroll"></div>
+        <button class="scroll-btn right" onclick="scrollMovies(this, 1)">▶</button>
+      </div>
+    </div>
+  </div>
+
+  <section id="recommended-section" class="movie-section">
+    <h2>Recommended for You 🎯</h2>
+    <div class="scroll-wrapper">
+      <button class="scroll-btn left" onclick="scrollMovies(this, -1)">◀</button>
+      <div id="recommended" class="movie-scroll"></div>
+      <button class="scroll-btn right" onclick="scrollMovies(this, 1)">▶</button>
+    </div>
+  </section>
+  <section id="liked-genre-section" class="movie-section">
+    <h2>Because You Liked 🎞️</h2>
+    <div class="scroll-wrapper">
+      <button class="scroll-btn left" onclick="scrollMovies(this, -1)">◀</button>
+      <div id="liked-genre-movies" class="movie-scroll"></div>
+      <button class="scroll-btn right" onclick="scrollMovies(this, 1)">▶</button>
+    </div>
+  </section>
+
+  <section id="wishlist-genre-section" class="movie-section">
+    <h2>From Your Wishlist 💖</h2>
+    <div class="scroll-wrapper">
+      <button class="scroll-btn left" onclick="scrollMovies(this, -1)">◀</button>
+      <div id="wishlist-genre-movies" class="movie-scroll"></div>
+      <button class="scroll-btn right" onclick="scrollMovies(this, 1)">▶</button>
+    </div>
+  </section>
+  <div id="details-section" class="details-overlay">
+    <div class="details-content">
+      <span class="close-icon" onclick="closeDetails()">✖</span>
+  
+      <div class="details-wrapper">
+        <div class="poster-container">
+          <img id="detailsPoster" src="" alt="Movie Poster" />
+        </div>
+  
+        <div class="info-container">
+          <div class="title-row">
+            <h2 id="detailsTitle">Movie Title</h2>
+            <div class="action-icons">
+              <span id="wishlist-icon" class="wishlist-icon" title="Add to Wishlist" onclick="toggleWishlistFromDetails()">⭐</span>
+            </div>
+          </div>
+  
+          <p id="detailsDesc">Description...</p>
+  
+          <div class="info-tags">
+            <p><strong>⭐ Rating:</strong> <span id="detailsRating">N/A</span></p>
+            <p><strong>🕒 Runtime:</strong> <span id="detailsRuntime">N/A</span></p>
+            <p><strong>📅 Release Date:</strong> <span id="detailsRelease">N/A</span></p>
+          </div>
+  
+          <p><strong>🎬 Director:</strong> <span id="detailsDirector">N/A</span></p>
+          <p><strong>🎭 Actors:</strong> <span id="detailsActors">N/A</span></p>
+          <p><strong>🎥 Genres:</strong> <span id="detailsGenres">N/A</span></p>
+        </div>
+      </div>
+  
+      <h3>Similar Movies</h3>
+      <div id="similar-movies" class="movie-scroll"></div>
+    </div>
+  </div>
+  
+  <script>
+    function scrollMovies(button, direction) {
+      const scrollContainer = button.parentElement.querySelector('.movie-scroll');
+      const scrollAmount = 300 * direction;
+      scrollContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  </script>
+  <script src="js/script.js"></script>
+  <div id="alert-message" class="alert-message"></div>
+
+  </script>
+</body>
+</html>
